@@ -1,0 +1,58 @@
+/*
+    Author: Ravi Raushan
+    Project: Mock OMR Sheet - Custom Stylesheet
+    Date: August 2025
+    Description: Contains custom CSS rules for the OMR application that supplement Tailwind CSS.
+*/
+
+body {
+    font-family: 'Inter', sans-serif;
+}
+
+/* * Custom styles for radio buttons to render them as OMR bubbles.
+ * - appearance: none; removes the default browser styling for the radio button.
+ * - This allows for complete custom styling.
+ */
+.omr-radio {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #cbd5e1; /* slate-300 */
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+    position: relative;
+}
+
+.omr-radio:checked {
+    background-color: #2563eb; /* blue-600 */
+    border-color: #1d4ed8; /* blue-800 */
+}
+
+/* * Result highlighting styles applied to question rows after grading.
+ */
+.correct { background-color: #dcfce7; } /* green-100 */
+.incorrect { background-color: #fee2e2; } /* red-100 */
+
+/* Styles for the checked radio button within a correct/incorrect row */
+.correct .omr-radio:checked { background-color: #16a34a; border-color: #15803d; }
+.incorrect .omr-radio:checked { background-color: #dc2626; border-color: #b91c1c; }
+
+/* * Simple fade-in animation for a smoother user experience when elements appear.
+ */
+@keyframes fadeIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-in-out forwards;
+}

@@ -1,0 +1,177 @@
+<!--
+    Author: Ravi Raushan
+    Project: Mock OMR Sheet - A Dynamic OMR Sheet Generator and Grader
+    Date: August 2025
+    Description: A client-side web application that allows users to generate a custom OMR sheet,
+                 fill it out under a timer, and get it graded against a provided answer key.
+                 Features include custom marking schemes and the ability to save a detailed
+                 performance report as a high-quality, vector-based PDF.
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mock OMR Sheet by Ravi Raushan</title>
+
+    <!-- External Libraries -->
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- SheetJS (xlsx) for reading Excel files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- PDF.js for reading text content from PDF files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
+    <!-- jsPDF for native PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-4xl">
+        <!-- =================================================================
+        HEADER SECTION
+        ================================================================== -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Mock OMR Sheet</h1>
+            <p class="text-slate-600 mt-2">Generate a custom OMR sheet, fill it out, and check your answers instantly.</p>
+        </header>
+
+        <!-- =================================================================
+        CONFIGURATION SECTION
+        - User inputs the number of questions and marking scheme.
+        ================================================================== -->
+        <div id="config-section" class="bg-white p-6 rounded-xl shadow-md mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-end gap-4">
+                <div>
+                    <label for="question-count" class="font-semibold text-sm text-slate-600 block mb-1">Number of Questions*</label>
+                    <input type="number" id="question-count" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., 50" min="1" max="200">
+                </div>
+                 <div>
+                    <label for="correct-marks" class="font-semibold text-sm text-slate-600 block mb-1">Marks for Correct (Optional)</label>
+                    <input type="number" id="correct-marks" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., 4">
+                </div>
+                <div>
+                    <label for="wrong-marks" class="font-semibold text-sm text-slate-600 block mb-1">Marks for Wrong (Optional)</label>
+                    <input type="number" id="wrong-marks" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., -1">
+                </div>
+                <button id="generate-btn" class="w-full bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-all shadow-sm">
+                    Generate Sheet
+                </button>
+            </div>
+             <p id="config-error" class="text-red-500 text-sm mt-2 hidden"></p>
+        </div>
+
+        <!-- =================================================================
+        MAIN OMR CONTAINER
+        - This section is hidden by default and appears after generation.
+        ================================================================== -->
+        <div id="omr-container" class="hidden">
+            <div class="flex justify-between items-center mb-4 px-2">
+                <h2 class="text-xl font-bold text-slate-800">OMR Sheet</h2>
+                <div id="timer-display" class="text-lg font-semibold bg-slate-200 text-slate-800 px-4 py-2 rounded-lg shadow">00:00</div>
+            </div>
+            <!-- The OMR sheet rows will be dynamically inserted here by JavaScript -->
+            <div id="omr-sheet" class="bg-white p-4 sm:p-8 rounded-xl shadow-lg space-y-4"></div>
+            
+            <!-- =================================================================
+            ACTIONS PANEL
+            - Contains controls for providing the answer key and viewing results.
+            ================================================================== -->
+            <div id="actions-panel" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Answer Key Input Section -->
+                <div class="bg-white p-6 rounded-xl shadow-md">
+                    <h3 class="font-bold text-xl mb-4 text-slate-800 border-b pb-2">Check Your Answers</h3>
+                    <div id="status-message" class="hidden p-3 mb-4 rounded-lg text-center font-semibold"></div>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label for="file-upload" class="block text-sm font-medium text-slate-700 mb-1">Upload Answer Key</label>
+                            <input type="file" id="file-upload" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer" accept=".xlsx, .xls, .pdf">
+                            <p class="text-xs text-slate-400 mt-1">Accepts .xlsx, .xls, .pdf. <span class="font-semibold cursor-pointer text-blue-500" onclick="showFormatInfo()">See format info.</span></p>
+                        </div>
+                        
+                        <div class="flex items-center my-4">
+                            <div class="flex-grow border-t border-slate-300"></div>
+                            <span class="flex-shrink mx-4 text-slate-500 text-sm">OR</span>
+                            <div class="flex-grow border-t border-slate-300"></div>
+                        </div>
+
+                        <div>
+                            <label for="manual-key" class="block text-sm font-medium text-slate-700 mb-1">Enter Key Manually</label>
+                            <input type="text" id="manual-key" class="w-full p-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="e.g., ABCDABCDAB...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls & Results Section -->
+                <div class="bg-white p-6 rounded-xl shadow-md flex flex-col justify-between">
+                    <div>
+                        <h3 class="font-bold text-xl mb-4 text-slate-800 border-b pb-2">Controls & Results</h3>
+                        <div id="results-display" class="hidden text-center mb-4">
+                            <p class="text-lg font-medium">Your Score:</p>
+                            <p id="score" class="text-4xl font-bold text-blue-600">0 / 0</p>
+                            <p id="total-marks-info" class="text-sm text-slate-500"></p>
+                             <p id="time-taken-info" class="text-sm font-semibold text-slate-700 mt-2"></p>
+                            <div class="mt-2 text-sm">
+                                <span id="correct-count" class="text-green-600 font-semibold">Correct: 0</span> | 
+                                <span id="incorrect-count" class="text-red-600 font-semibold">Incorrect: 0</span> |
+                                <span id="unanswered-count" class="text-slate-600 font-semibold">Unanswered: 0</span>
+                            </div>
+                            <div id="marks-breakdown" class="hidden text-xs mt-2 text-slate-600 bg-slate-50 p-2 rounded-md">
+                                <span id="correct-marks-total"></span>
+                                <span id="incorrect-marks-total"></span>
+                            </div>
+                        </div>
+                         <p id="check-error" class="text-red-500 text-center text-sm my-2 hidden"></p>
+                    </div>
+
+                    <div class="flex flex-col gap-4 mt-4">
+                        <button id="check-btn" class="w-full bg-green-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-green-700 transition-all shadow-sm">
+                            Finish & Check
+                        </button>
+                        <button id="save-pdf-btn" class="hidden w-full bg-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-indigo-700 transition-all shadow-sm">
+                            Save Full Report as PDF
+                        </button>
+                        <button id="reset-btn" class="w-full bg-slate-700 text-white font-bold py-3 px-6 rounded-lg hover:bg-slate-800 transition-all shadow-sm">
+                            Start New Test
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- =================================================================
+    MODALS
+    - Hidden by default, shown by JavaScript for user interaction.
+    ================================================================== -->
+    <div id="format-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+            <h2 class="text-2xl font-bold mb-4">Answer Key Format</h2>
+            <!-- Modal content can be filled here -->
+            <button onclick="hideFormatInfo()" class="mt-6 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Got it!</button>
+        </div>
+    </div>
+
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
+        <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full text-center">
+            <h2 class="text-2xl font-bold mb-4">No Answer Key Provided</h2>
+            <p class="text-slate-700 mb-6">Proceed without checking? You can save your marked sheet as a PDF.</p>
+            <div class="flex justify-center gap-4">
+                <button id="confirm-yes-btn" class="bg-blue-600 text-white font-bold py-2 px-8 rounded-lg hover:bg-blue-700">Yes</button>
+                <button id="confirm-no-btn" class="bg-slate-300 text-slate-800 font-bold py-2 px-8 rounded-lg hover:bg-slate-400">No</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Link to external JavaScript file -->
+    <script src="script.js" defer></script>
+
+</body>
+</html>
