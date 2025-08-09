@@ -9,7 +9,8 @@ body {
     font-family: 'Inter', sans-serif;
 }
 
-/* * Custom styles for radio buttons to render them as OMR bubbles.
+/**
+ * Custom styles for radio buttons to render them as OMR bubbles.
  * - appearance: none; removes the default browser styling for the radio button.
  * - This allows for complete custom styling.
  */
@@ -31,7 +32,8 @@ body {
     border-color: #1d4ed8; /* blue-800 */
 }
 
-/* * Result highlighting styles applied to question rows after grading.
+/**
+ * Result highlighting styles applied to question rows after grading.
  */
 .correct { background-color: #dcfce7; } /* green-100 */
 .incorrect { background-color: #fee2e2; } /* red-100 */
@@ -40,7 +42,8 @@ body {
 .correct .omr-radio:checked { background-color: #16a34a; border-color: #15803d; }
 .incorrect .omr-radio:checked { background-color: #dc2626; border-color: #b91c1c; }
 
-/* * Simple fade-in animation for a smoother user experience when elements appear.
+/**
+ * Simple fade-in animation for a smoother user experience when elements appear.
  */
 @keyframes fadeIn {
     from { 

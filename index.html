@@ -15,13 +15,9 @@
     <title>Mock OMR Sheet by Ravi Raushan</title>
 
     <!-- External Libraries -->
-    <!-- Tailwind CSS for modern styling -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- SheetJS (xlsx) for reading Excel files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <!-- PDF.js for reading text content from PDF files -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.14.305/pdf.min.js"></script>
-    <!-- jsPDF for native PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <!-- Google Fonts -->
@@ -34,18 +30,13 @@
 <body class="bg-slate-100 text-slate-800">
 
     <div class="container mx-auto p-4 md:p-8 max-w-4xl">
-        <!-- =================================================================
-        HEADER SECTION
-        ================================================================== -->
+        <!-- HEADER SECTION -->
         <header class="text-center mb-8">
             <h1 class="text-3xl md:text-4xl font-bold text-slate-900">Mock OMR Sheet</h1>
             <p class="text-slate-600 mt-2">Generate a custom OMR sheet, fill it out, and check your answers instantly.</p>
         </header>
 
-        <!-- =================================================================
-        CONFIGURATION SECTION
-        - User inputs the number of questions and marking scheme.
-        ================================================================== -->
+        <!-- CONFIGURATION SECTION -->
         <div id="config-section" class="bg-white p-6 rounded-xl shadow-md mb-8">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 items-end gap-4">
                 <div>
@@ -67,22 +58,15 @@
              <p id="config-error" class="text-red-500 text-sm mt-2 hidden"></p>
         </div>
 
-        <!-- =================================================================
-        MAIN OMR CONTAINER
-        - This section is hidden by default and appears after generation.
-        ================================================================== -->
+        <!-- MAIN OMR CONTAINER -->
         <div id="omr-container" class="hidden">
             <div class="flex justify-between items-center mb-4 px-2">
                 <h2 class="text-xl font-bold text-slate-800">OMR Sheet</h2>
                 <div id="timer-display" class="text-lg font-semibold bg-slate-200 text-slate-800 px-4 py-2 rounded-lg shadow">00:00</div>
             </div>
-            <!-- The OMR sheet rows will be dynamically inserted here by JavaScript -->
             <div id="omr-sheet" class="bg-white p-4 sm:p-8 rounded-xl shadow-lg space-y-4"></div>
             
-            <!-- =================================================================
-            ACTIONS PANEL
-            - Contains controls for providing the answer key and viewing results.
-            ================================================================== -->
+            <!-- ACTIONS PANEL -->
             <div id="actions-panel" class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Answer Key Input Section -->
                 <div class="bg-white p-6 rounded-xl shadow-md">
@@ -147,14 +131,24 @@
         </div>
     </div>
     
-    <!-- =================================================================
-    MODALS
-    - Hidden by default, shown by JavaScript for user interaction.
-    ================================================================== -->
+    <!-- MODALS -->
     <div id="format-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 hidden z-50">
         <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
             <h2 class="text-2xl font-bold mb-4">Answer Key Format</h2>
-            <!-- Modal content can be filled here -->
+            <div class="space-y-4 text-slate-700">
+                <div>
+                    <h3 class="font-semibold text-lg">Excel (.xlsx, .xls)</h3>
+                    <p>Create a sheet with two columns: Column A for the question number, and Column B for the correct option (A, B, C, or D).</p>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg">PDF (.pdf)</h3>
+                    <p>The PDF should contain a list of answers, like "1. A", "2. C", etc.</p>
+                </div>
+                 <div>
+                    <h3 class="font-semibold text-lg">Manual Entry</h3>
+                    <p>Enter a single string of characters representing the answers (e.g., BCAD...).</p>
+                </div>
+            </div>
             <button onclick="hideFormatInfo()" class="mt-6 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700">Got it!</button>
         </div>
     </div>

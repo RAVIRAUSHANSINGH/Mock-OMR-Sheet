@@ -85,7 +85,18 @@ function generateOMRSheet() {
     // Dynamically create and append question rows.
     omrSheet.innerHTML = '';
     for (let i = 1; i <= totalQuestions; i++) {
-        omrSheet.appendChild(createQuestionRow(i));
+        const questionRow = createQuestionRow(i);
+        omrSheet.appendChild(questionRow);
+        const clearButton = questionRow.querySelector('.clear-btn');
+        
+        // Add event listener to the clear button.
+        clearButton.addEventListener('click', () => clearSelection(i));
+        
+        // Show the clear button only when a radio button is selected.
+        questionRow.addEventListener('change', () => {
+            const isChecked = questionRow.querySelector(`input[name="question-${i}"]:checked`);
+            clearButton.classList.toggle('hidden', !isChecked);
+        });
     }
 
     // Display the OMR container and start the test.
@@ -96,7 +107,7 @@ function generateOMRSheet() {
 }
 
 /**
- * Creates a single question row element with radio buttons.
+ * Creates a single question row element with radio buttons and a clear button.
  * @param {number} i - The question number.
  * @returns {HTMLElement} The created div element for the question row.
  */
@@ -110,9 +121,27 @@ function createQuestionRow(i) {
             <label for="q${i}-opt${option}" class="font-semibold cursor-pointer">${option}</label>
         </div>`).join('');
     questionRow.innerHTML = `
-        <div class="flex items-center"><span class="font-bold text-slate-700 w-10 text-right mr-4">${i}.</span></div>
-        <div class="flex items-center space-x-4 md:space-x-6">${optionsHTML}</div>`;
+        <div class="flex items-center">
+            <span class="font-bold text-slate-700 w-10 text-right mr-4">${i}.</span>
+        </div>
+        <div class="flex items-center space-x-4 md:space-x-6">
+            ${optionsHTML}
+            <button class="text-sm font-medium text-red-500 hover:text-red-700 hidden clear-btn">Clear</button>
+        </div>`;
     return questionRow;
+}
+
+/**
+ * Clears the selected radio button for a specific question.
+ * @param {number} questionNumber - The number of the question to clear.
+ */
+function clearSelection(questionNumber) {
+    const row = document.getElementById(`q-row-${questionNumber}`);
+    document.querySelectorAll(`input[name="question-${questionNumber}"]`).forEach(radio => {
+        radio.checked = false;
+    });
+    // Hide the clear button after clearing the selection.
+    row.querySelector('.clear-btn').classList.add('hidden');
 }
 
 /**
@@ -157,8 +186,9 @@ function gradeSheet() {
         const selectedOption = document.querySelector(`input[name="question-${i}"]:checked`);
         const correctAnswer = answerKey[i];
 
-        // Disable radio buttons after grading.
+        // Disable radio buttons and hide clear button after grading.
         document.querySelectorAll(`input[name="question-${i}"]`).forEach(radio => radio.disabled = true);
+        row.querySelector('.clear-btn').classList.add('hidden');
 
         if (!selectedOption) unanswered++;
         else if (selectedOption.value === correctAnswer) {
@@ -208,6 +238,7 @@ function handleConfirmProceed() {
     stopTimer();
     isGraded = false;
     document.querySelectorAll('input[type="radio"]').forEach(radio => radio.disabled = true);
+    document.querySelectorAll('.clear-btn').forEach(btn => btn.classList.add('hidden'));
     showStatusMessage('You can now save your marked sheet.', 'success');
     // Change the "Finish & Check" button to a save button.
     checkBtn.textContent = 'Save Marked Sheet as PDF';
