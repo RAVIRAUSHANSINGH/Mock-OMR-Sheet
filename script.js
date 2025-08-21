@@ -1,5 +1,5 @@
 /**
- * @author Ravi Raushan
+ * @author Ravi Raushan Singh
  * @project Mock OMR Sheet - Main Application Logic
  * @date August 2025
  * @description This script powers the Mock OMR Sheet application. It handles UI interactions,
